@@ -85,12 +85,11 @@ def set_seed(args):
 
 
 def valid(args, model, writer, test_loader, global_step):
-    # Validation!
     eval_losses = AverageMeter()
 
-    logger.info("***** Running Validation *****")
-    logger.info("  Num steps = %d", len(test_loader))
-    logger.info("  Batch size = %d", args.eval_batch_size)
+    # logger.info("***** Running Validation *****")
+    # logger.info("val Num steps = %d", len(test_loader))
+    # logger.info("val Batch size = %d", args.eval_batch_size)
 
     model.eval()
     all_preds, all_label = [], []
@@ -128,10 +127,9 @@ def valid(args, model, writer, test_loader, global_step):
 
     logger.info("\n")
     logger.info("Validation Results")
-    logger.info("Global Steps: %d" % global_step)
+    # logger.info("Global Steps: %d" % global_step)
     logger.info("Valid Loss: %2.5f" % eval_losses.avg)
     logger.info("Valid Accuracy: %2.5f" % accuracy)
-
     writer.add_scalar("test/accuracy", scalar_value=accuracy, global_step=global_step)
     return accuracy
 
@@ -223,24 +221,21 @@ def train(args, model):
 def main():
     parser = argparse.ArgumentParser()
     # Required parameters
-    parser.add_argument("--name", required=True,
-                        help="Name of this run. Used for monitoring.")
-    parser.add_argument("--dataset", choices=["cifar10", "cifar100"], default="cifar10",  help="Which downstream task.")
-    parser.add_argument("--model_type", choices=["ViT-B_16", "ViT-B_32", "ViT-L_16",
-                                                 "ViT-L_32", "ViT-H_14", "R50-ViT-B_16"],
+    parser.add_argument("--name", required=True, help="Name of this run. Used for monitoring.")
+    parser.add_argument("--dataset", choices=["cifar10", "cifar100", "emptyJudge5"], default="cifar10",  help="Which downstream task.")
+    parser.add_argument('--data_root', type=str, default='/data/fineGrained')
+    parser.add_argument("--model_type", choices=["ViT-B_16", "ViT-B_32", "ViT-L_16", "ViT-L_32", "ViT-H_14", "R50-ViT-B_16"],
                         default="ViT-B_16",
                         help="Which variant to use.")
-    parser.add_argument("--pretrained_dir", type=str, default="checkpoint/ViT-B_16.npz",
+    parser.add_argument("--pretrained_dir", type=str, default="ckpts/ViT-B_16.npz",
                         help="Where to search for pretrained ViT models.")
     parser.add_argument("--output_dir", default="output", type=str,
                         help="The output directory where checkpoints will be written.")
 
-    parser.add_argument("--img_size", default=224, type=int,
-                        help="Resolution size")
-    parser.add_argument("--train_batch_size", default=256, type=int,
+    parser.add_argument("--img_size", default=224, type=int, help="Resolution size")
+    parser.add_argument("--train_batch_size", default=128, type=int,
                         help="Total batch size for training.")
-    parser.add_argument("--eval_batch_size", default=64, type=int,
-                        help="Total batch size for eval.")
+    parser.add_argument("--eval_batch_size", default=32, type=int, help="Total batch size for eval.")
     parser.add_argument("--eval_every", default=100, type=int,
                         help="Run prediction on validation set every so many steps."
                              "Will always run one evaluation at the end of training.")
@@ -282,8 +277,7 @@ def main():
     else:  # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
         torch.cuda.set_device(args.local_rank)
         device = torch.device("cuda", args.local_rank)
-        torch.distributed.init_process_group(backend='nccl',
-                                             timeout=timedelta(minutes=60))
+        torch.distributed.init_process_group(backend='nccl', timeout=timedelta(minutes=60))
         args.n_gpu = 1
     args.device = device
 
