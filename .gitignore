@@ -1,2 +1,8 @@
+.idea/
 data/
 ckpts/
+logs/
+models/__pycache__/
+utils/__pycache__/
+output/
+
